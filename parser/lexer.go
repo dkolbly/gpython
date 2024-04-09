@@ -260,6 +260,8 @@ var tokens = map[string]int{
 	"while":    WHILE,
 	"with":     WITH,
 	"yield":    YIELD,
+	"case":     CASE,
+	"match":    MATCH,
 }
 
 var tokenToString map[int]string

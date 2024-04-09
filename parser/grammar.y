@@ -133,7 +133,7 @@ func setCtxs(yylex yyLexer, exprs []ast.Expr, ctx ast.ExprContext) {
 %type <obj> strings
 %type <mod> inputs file_input single_input eval_input
 %type <stmts> simple_stmt stmt nl_or_stmt small_stmts stmts suite optional_else
-%type <stmt> compound_stmt small_stmt expr_stmt del_stmt pass_stmt flow_stmt import_stmt global_stmt nonlocal_stmt assert_stmt break_stmt continue_stmt return_stmt raise_stmt yield_stmt import_name import_from while_stmt if_stmt for_stmt try_stmt with_stmt funcdef classdef classdef_or_funcdef decorated
+%type <stmt> compound_stmt small_stmt expr_stmt del_stmt pass_stmt flow_stmt import_stmt global_stmt nonlocal_stmt assert_stmt break_stmt continue_stmt return_stmt raise_stmt yield_stmt import_name import_from while_stmt if_stmt for_stmt try_stmt with_stmt funcdef classdef classdef_or_funcdef decorated match_stmt
 %type <op> augassign
 %type <expr> expr_or_star_expr expr star_expr xor_expr and_expr shift_expr arith_expr term factor power trailer atom test_or_star_expr test not_test lambdef test_nocond lambdef_nocond or_test and_test comparison testlist testlist_star_expr yield_expr_or_testlist yield_expr yield_expr_or_testlist_star_expr dictorsetmaker sliceop except_clause optional_return_type decorator
 %type <exprs> exprlist testlistraw comp_if comp_iter expr_or_star_exprs test_or_star_exprs tests test_colon_tests trailers equals_yield_expr_or_testlist_star_expr decorators
@@ -220,6 +220,8 @@ func setCtxs(yylex yyLexer, exprs []ast.Expr, ctx ast.ExprContext) {
 %token WHILE // while
 %token WITH // with
 %token YIELD // yield
+%token CASE // case
+%token MATCH // match
 
 %token '(' ')' '[' ']' ':' ',' ';' '+' '-' '*' '/' '|' '&' '<' '>' '=' '.' '%' '{' '}' '^' '~' '@'
 
@@ -1066,6 +1068,10 @@ compound_stmt:
 	{
 		$$ = $1
 	}
+|	match_stmt
+	{
+		$$ = $1
+	}
 |	while_stmt
 	{
 		$$ = $1
@@ -1121,6 +1127,28 @@ optional_else:
 		$$ = $3
 	}
 
+match_stmt:
+        MATCH expr ':' NEWLINE INDENT case_suite DEDENT
+        {
+        }
+
+case_suite:
+        case_clause
+        {
+        }
+|       case_suite case_clause
+        {
+        }
+
+case_clause:
+        CASE expr ':' NEWLINE INDENT stmts DEDENT
+        {
+        }
+|
+        PASS NEWLINE
+        {
+        }
+        
 if_stmt:
 	IF test ':' suite elifs optional_else
 	{
