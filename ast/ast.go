@@ -47,7 +47,7 @@ type Stmt interface {
 	stmtNode()
 }
 
-// All ExprBase notes implement the Expr interface
+// All ExprBase nodes implement the Expr interface
 type Expr interface {
 	Ast
 	exprNode()
@@ -337,6 +337,18 @@ type If struct {
 	Test   Expr
 	Body   []Stmt
 	Orelse []Stmt
+}
+
+type Match struct {
+	StmtBase
+	ContextExpr Expr
+	Body []*MatchClause
+}
+
+type MatchClause struct {
+	Pos
+	Test Expr
+	Body []Stmt
 }
 
 type With struct {

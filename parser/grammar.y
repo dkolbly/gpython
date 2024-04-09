@@ -125,6 +125,8 @@ func setCtxs(yylex yyLexer, exprs []ast.Expr, ctx ast.ExprContext) {
 	exchandlers	[]*ast.ExceptHandler
 	withitem	*ast.WithItem
 	withitems	[]*ast.WithItem
+        matchclause     *ast.MatchClause
+        matchclauses    []*ast.MatchClause
 	arg		*ast.Arg
 	args		[]*ast.Arg
 	arguments	*ast.Arguments
@@ -151,6 +153,8 @@ func setCtxs(yylex yyLexer, exprs []ast.Expr, ctx ast.ExprContext) {
 %type <exchandlers> except_clauses
 %type <withitem> with_item
 %type <withitems> with_items
+%type <matchclause> case_clause
+%type <matchclauses> case_suite
 %type <arg> vfpdeftest vfpdef optional_vfpdef tfpdeftest tfpdef optional_tfpdef
 %type <args> vfpdeftests vfpdeftests1 tfpdeftests tfpdeftests1
 %type <arguments> varargslist parameters optional_typedargslist typedargslist
@@ -1130,23 +1134,37 @@ optional_else:
 match_stmt:
         MATCH expr ':' NEWLINE INDENT case_suite DEDENT
         {
+          $$ = &ast.Match{StmtBase: ast.StmtBase{Pos: $<pos>$}, ContextExpr: $2, Body: $6 }
         }
 
 case_suite:
         case_clause
         {
+          $$ = nil
+          if $1 != nil {
+            $$ = append($$, $1)
+          }
         }
 |       case_suite case_clause
         {
+          if $2 != nil {
+            $$ = append($$, $2)
+          }
         }
 
 case_clause:
         CASE expr ':' NEWLINE INDENT stmts DEDENT
         {
+          $$ = &ast.MatchClause{
+            Pos: $<pos>$,
+            Test: $2,
+            Body: $6,
+          }
         }
 |
         PASS NEWLINE
         {
+          $$ = nil
         }
         
 if_stmt:
